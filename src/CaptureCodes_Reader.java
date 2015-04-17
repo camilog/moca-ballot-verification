@@ -1,3 +1,10 @@
+import com.googlecode.lanterna.TerminalFacade;
+import com.googlecode.lanterna.gui.GUIScreen;
+import com.googlecode.lanterna.gui.Theme;
+import com.googlecode.lanterna.gui.Window;
+import com.googlecode.lanterna.gui.component.Button;
+import com.googlecode.lanterna.gui.dialog.MessageBox;
+import com.googlecode.lanterna.screen.Screen;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -10,70 +17,93 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
-public class CaptureCodes_Reader {
+public class CaptureCodes_Reader extends Window {
 
-    static public void main(String[] args) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException, InterruptedException {
-        while (true) {
-            procedure();
-            Thread.sleep(30000);
-            for (int i = 0; i < 25; ++i)
-                System.out.println();
-        }
+    public CaptureCodes_Reader() {
+        super("Ballot Encryption Verification");
+
+        addComponent(new Button("Initialize verification", () -> {
+            // TODO: apretar OK automaticamente en la nueva ventana
+            String ballotWithSignature = com.googlecode.lanterna.gui.dialog.TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read FIRST QR-Code", "", 1000);
+            String randomnessString = com.googlecode.lanterna.gui.dialog.TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read SECOND QR-Code", "", 1000);
+
+            String encryptedCandidate = "";
+
+            try {
+                encryptedCandidate = procedure(ballotWithSignature, randomnessString);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            MessageBox.showMessageBox(getOwner(), "Candidato Encriptado", encryptedCandidate);
+        }));
+
+        addComponent(new Button("Exit application", () -> {
+            // Salirse del window
+            getOwner().getScreen().clear();
+            getOwner().getScreen().refresh();
+            getOwner().getScreen().setCursorPosition(0, 0);
+            getOwner().getScreen().refresh();
+            getOwner().getScreen().stopScreen();
+            System.exit(0);
+        }));
+
+
     }
 
-    private static void procedure() throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException {
+    static public void main(String[] args) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException, InterruptedException {
+
+        CaptureCodes_Reader myWindow = new CaptureCodes_Reader();
+        GUIScreen guiScreen = TerminalFacade.createGUIScreen();
+        Screen screen = guiScreen.getScreen();
+
+        // TODO: refrescar la pantalla al terminar la operación
+
+        screen.startScreen();
+        guiScreen.showWindow(myWindow, GUIScreen.Position.CENTER);
+        screen.refresh();
+        screen.stopScreen();
+
+    }
+
+    private static String procedure(String ballotWithSignature, String randomnessString) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException {
         BigInteger publicKeyN = recoverPublicKey("publicValueForEncryption/publicKeyN.key");
 
         PaillierKey publicKey = new PaillierKey(publicKeyN, new Random());
         Paillier p = new Paillier(publicKey);
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        System.out.println(" *********************************************************** ");
-        System.out.println(" * Bienvenido al Verificador de la Encriptación de su Voto * ");
-        System.out.println(" *********************************************************** ");
-        System.out.println();
-
-        System.out.println("Escanee el PRIMER Código QR (Encriptación de su voto)");
-        String ballotWithSignature = br.readLine();
-
         int sep = Integer.parseInt(ballotWithSignature.substring(0, 3));
         BigInteger ballot = new BigInteger(ballotWithSignature.substring(3, sep+3));
-
-        System.out.println();
-        System.out.println("Escanee el SEGUNDO Código QR (Aleatoriedad utilizada)");
-        String randomnessString = br.readLine();
-        System.out.println();
 
         BigInteger randomness = new BigInteger(randomnessString);
 
         String[] candidates = setCandidates("candidates/");
         byte[] possibleBallot = new byte[candidates.length + 1];
         possibleBallot[0] = 1;
-        boolean success = false;
+        String encryptedCandidate = "No hay candidato encriptado";
 
         for (int i = 0; i < possibleBallot.length - 1; i++){
             possibleBallot[i+1] = 1;
             BigInteger enc = p.encrypt(new BigInteger(possibleBallot), randomness);
             if (enc.equals(ballot)) {
-                System.out.println("El voto encriptado es: " + candidates[i]);
-                success = true;
+                encryptedCandidate = candidates[i];
                 break;
             }
             else
                 possibleBallot[i+1] = 0;
         }
 
-        if (!success)
-            System.out.println("No ha sido encriptado un voto válido, repetir el proceso de generación de la papeleta.");
-        else {
-            System.out.println();
-            System.out.println("Si está de acuerdo con la encriptación, proceda a doblar la primera parte del voto y dirigirse a la mesa de votación.");
-            System.out.println("Si no, puede repetir el proceso de generación de papeleta.");
-            System.out.println("\nGracias por operar con el Verificador de la Encriptación de votos.");
-        }
+        return encryptedCandidate;
+
     }
 
     private static BigInteger recoverPublicKey(String fileName) throws IOException, ClassNotFoundException {
@@ -102,7 +132,5 @@ public class CaptureCodes_Reader {
 
         return candidates;
     }
-
-
 
 }

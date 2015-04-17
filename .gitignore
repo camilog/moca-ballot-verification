@@ -20,3 +20,5 @@ hs_err_pid*
 candidates/candidates.xml
 publicValueForEncryption/publicKeyN.key
 out
+!lib/paillier.jar
+!lib/lanterna-2.1.9.jar
