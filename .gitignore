@@ -20,4 +20,6 @@ hs_err_pid*
 candidates/candidates.xml
 publicValueForEncryption/publicKeyN.key
 out
-!lib/*
+!lib/paillier.jar
+!lib/lanterna-2.1.9.jar
+!lib/gson-2.3.1.jar
