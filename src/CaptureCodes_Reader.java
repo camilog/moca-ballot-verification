@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import com.googlecode.lanterna.TerminalFacade;
 import com.googlecode.lanterna.gui.GUIScreen;
 import com.googlecode.lanterna.gui.Window;
@@ -18,18 +19,34 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Random;
 
 public class CaptureCodes_Reader extends Window {
 
+    private static final String authorityPublicKeyServer = "http://cjgomez.duckdns.org:3000/authority_public_keys";
+    // private static final String candidatesServer = "http://cjgomez.duckdns.org:3000/candidates";
+
     public CaptureCodes_Reader() {
         super("Ballot Encryption Verification");
+
+        // Add button to configurate the publicInformation
+        addComponent(new Button("Configurate Public Information", () -> {
+            try {
+                downloadAuthPublicKey(authorityPublicKeyServer);
+                // downloadCandidatesFile(candidatesServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }));
 
         // Add button to initialize application
         addComponent(new Button("Initialize verification", () -> {
             // TODO: apretar OK automaticamente en la nueva ventana
             // Retrieve first QR-Code (encryptedBallot + signature)
-            String ballotWithSignature = com.googlecode.lanterna.gui.dialog.TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read FIRST QR-Code", "", 1000);
+            String encryptedBallotWithSignature = com.googlecode.lanterna.gui.dialog.TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read FIRST QR-Code", "", 1000);
 
             // Retrieve second QR-Code (randomness used to encrypt)
             String randomnessString = com.googlecode.lanterna.gui.dialog.TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read SECOND QR-Code", "", 1000);
@@ -39,14 +56,8 @@ public class CaptureCodes_Reader extends Window {
 
             // Apply algorithm to try all possible candidates and stores in encryptedCandidate the one who is actually encrypted
             try {
-                encryptedCandidate = procedure(ballotWithSignature, randomnessString);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (ParserConfigurationException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
+                encryptedCandidate = procedure(encryptedBallotWithSignature, randomnessString);
+            } catch (IOException | SAXException | ParserConfigurationException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
 
@@ -65,8 +76,53 @@ public class CaptureCodes_Reader extends Window {
             System.exit(0);
         }));
 
+    }
+
+    // Download and store Public Key of the Authority from the BB
+    private void downloadAuthPublicKey(String authorityPublicKeyServer) throws IOException {
+        // Create file where to store the publicKey of the authority
+        File authPublicKeyFile = new File("publicValueForEncryption" + File.separator + "publicKeyN.key");
+
+        // Set the URL to GET the public key of the authority
+        URL obj = new URL(authorityPublicKeyServer);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        // Add request header
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.getResponseCode();
+
+        // Receive the response
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        // Process JSON as an object to extract the key
+        String jsonString = response.toString();
+        Gson gson = new Gson();
+        AuthorityPublicKey[] voterPublicKey = gson.fromJson(jsonString, AuthorityPublicKey[].class);
+        String authPublicKey_key = voterPublicKey[0].key;
+
+        // Write the public key in the File
+        BufferedWriter writer = new BufferedWriter(new FileWriter(authPublicKeyFile));
+        writer.write(authPublicKey_key);
+        writer.close();
 
     }
+
+    /*
+    // Download and store Candidates file from the BB
+    private void downloadCandidatesFile(String authorityPublicKeyServer) {
+        File candidatesFile = new File("candidates/candidates.xml");
+
+        // TODO: Analizar si archivo se suberá en un servidor FTP o en la Base de datos.
+
+    }
+    */
 
     static public void main(String[] args) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException, InterruptedException {
 
@@ -87,20 +143,21 @@ public class CaptureCodes_Reader extends Window {
 
     }
 
-    private static String procedure(String ballotWithSignature, String randomnessString) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException {
+    private static String procedure(String encryptedBallotWithSignature, String randomnessString) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException {
+        // Separate text from ballot in: length of ballot(sep) + ballot + signature, and create BigInteger ballot
+        int sep = Integer.parseInt(encryptedBallotWithSignature.substring(0, 3));
+        String encryptedBallotString = encryptedBallotWithSignature.substring(3, sep + 3);
+        BigInteger ballot = new BigInteger(encryptedBallotString);
+
+        // Create BigInteger randomness
+        BigInteger randomness = new BigInteger(randomnessString);
+
         // Recover publicKey from local file
         BigInteger publicKeyN = recoverPublicKey("publicValueForEncryption/publicKeyN.key");
 
         // Create Paillier scheme with given publicKey
         PaillierKey publicKey = new PaillierKey(publicKeyN, new Random());
         Paillier p = new Paillier(publicKey);
-
-        // Separate text from ballot in: length of ballot(sep) + ballot + signature, and create BigInteger ballot
-        int sep = Integer.parseInt(ballotWithSignature.substring(0, 3));
-        BigInteger ballot = new BigInteger(ballotWithSignature.substring(3, sep+3));
-
-        // Create BigInteger with the randomness read from QR-Code
-        BigInteger randomness = new BigInteger(randomnessString);
 
         // Set-up the list of candidates and variable to save the possible encrypted candidate
         String[] candidates = setCandidates("candidates/");
@@ -120,7 +177,7 @@ public class CaptureCodes_Reader extends Window {
                 possibleBallot[i+1] = 0;
         }
 
-        // Return encryptedCandidate in the ballot. If none returns "No hay candidato encriptado"
+        // Return encryptedCandidate in the ballot. If none, returns "No hay candidato encriptado"
         return encryptedCandidate;
 
     }
@@ -128,13 +185,12 @@ public class CaptureCodes_Reader extends Window {
     // Function to retrieve publicKey (BigInteger object) from local file
     private static BigInteger recoverPublicKey(String fileName) throws IOException, ClassNotFoundException {
         ObjectInputStream oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(fileName)));
-        BigInteger publicKeyN = (BigInteger) oin.readObject();
-        return publicKeyN;
+        return (BigInteger) oin.readObject();
     }
 
     // Function to set-up the candidates from a local file called candidates.xml (which is stored in candidates folder)
     private static String[] setCandidates(String folderName) throws ParserConfigurationException, IOException, SAXException {
-        // Because of how is written candidates.xml, it needs this fuction to store in a String[] the different candidates
+        // Because of how is written candidates.xml, it needs this function to store in a String[] the different candidates
         String[] candidates;
         File file = new File(folderName + "candidates.xml");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
