@@ -13,7 +13,7 @@ Verifies that the selection made in [BallotSelection](www.cjgomez.cl) was encryp
 
 ### Configuration
 * Execute ballotVerification.jar with `$ java -jar ballotVerification.jar`
-* Select "Configurate Public Information" (just the first time) to download the necessary values from the Bulletin Board server: candidates/candidates.xml and publicValueForEncryption/publicKeyN.key.
+* Select "Configure Public Information" (just the first time) to download the necessary values from the Bulletin Board server: candidates/candidates.xml and publicValueForEncryption/publicKeyN.key.
 
 ### Verification Process
 * After configuration, select "Initialize Verification".
