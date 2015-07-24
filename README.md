@@ -1,14 +1,14 @@
 # BallotVerification
-Fourth part of the project [*Voter-Ballot Self Verification*](www.cjgomez.cl).
+Fourth part of the project [*Voter-Ballot Self Verification*](https://github.com/CamiloG/VoterBallotSelfVerificationSystem).
 
-Verifies that the selection made in [BallotSelection](www.cjgomez.cl) was encrypted in the printed ballot.
+Verifies that the selection made in [BallotSelection](https://github.com/CamiloG/BallotSelection) was encrypted in the printed ballot.
 
 ## Files
 1. **CaptureCodes_Reader.java**: 
 2. **AuthorityPublicKey.java**:
 
 ## How to Use
-* Download the .jar file [here](http://www.cjgomez.cl).
+* Download the .jar file [here](https://github.com/CamiloG/VoterBallotSelfVerificationSystem/blob/master/Precinct_Apps/BallotVerification.jar?raw=true).
 * Put the file ballotVerification.jar in the project folder.
 
 ### Configuration
