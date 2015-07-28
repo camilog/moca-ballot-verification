@@ -4,7 +4,7 @@ Fourth part of the project [*Voter-Ballot Self Verification*](https://github.com
 Verifies that the selection made in [BallotSelection](https://github.com/CamiloG/BallotSelection) was encrypted in the printed ballot.
 
 ## Files
-1. **CaptureCodes_Reader.java**: 
+1. **InterfaceLanterna.java**:
 2. **AuthorityPublicKey.java**:
 
 ## How to Use
