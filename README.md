@@ -1,5 +1,5 @@
 # BallotVerification
-Fourth part of the project [*Voter-Ballot Self Verification*](https://github.com/CamiloG/VoterBallotSelfVerificationSystem).
+Fourth part of the [*MoCa QR*](https://github.com/CamiloG/moca_qr) Voting System project.
 
 Verifies that the selection made in [BallotSelection](https://github.com/CamiloG/BallotSelection) was encrypted in the printed ballot.
 
@@ -8,7 +8,7 @@ Verifies that the selection made in [BallotSelection](https://github.com/CamiloG
 2. **AuthorityPublicKey.java**:
 
 ## How to Use
-* Download the .jar file [here](https://github.com/CamiloG/VoterBallotSelfVerificationSystem/blob/master/Precinct_Apps/BallotVerification.jar?raw=true).
+* Download the .jar file [here](https://github.com/CamiloG/moca_qr/blob/master/Precinct_Apps/BallotVerification.jar?raw=true).
 * Put the file ballotVerification.jar in the project folder.
 
 ### Configuration
