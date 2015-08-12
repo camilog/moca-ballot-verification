@@ -6,7 +6,7 @@ Verifies that the selection made in [BallotSelection](https://github.com/CamiloG
 ## Files
 1. **BallotVerification.java**: Main class of the program, where are all the logic and the methods to the configuration of the public information, and the reading and processing of both QR codes.
 
-2. **GUILanterna.java**: Class that manages the Lanterna GUI environment, made to run on console-text-only devices. The recommendend is to run this application in the less hardware necessary, so is very common to run this application on a Raspberry PI without graphic interface.
+2. **GUILanterna.java**: Class that manages the Lanterna GUI environment, made to run on console-text-only devices. The recommended is to run this application in the less hardware necessary, so is very common to run this application on a Raspberry PI without graphic interface.
 
 3. **AuthorityPublicKey.java**: Class for the creation of the object after the retrieving of the JSON from the Bulletin Board server.
 
