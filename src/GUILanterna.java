@@ -57,7 +57,7 @@ public class GUILanterna extends Window {
             String finalCandidate = BallotVerification.verification();
 
             // Final message which shows the encryptedCandidate, if none, shows an empty String
-            MessageBox.showMessageBox(getOwner(), "Candidato Encriptado", finalCandidate, DialogButtons.OK);
+            MessageBox.showMessageBox(getOwner(), "Encrypted Candidate", finalCandidate, DialogButtons.OK);
             // TODO: Reiniciar aplicación luego de pasado un cierto tiempo
 
         }));

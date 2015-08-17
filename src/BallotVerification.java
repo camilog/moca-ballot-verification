@@ -59,7 +59,7 @@ public class BallotVerification {
     //@ ensures \result != null
     protected static String verification() {
 
-        String finalCandidate = "NO EXISTE UN CANDIDATO VÁLIDO ENCRIPTADO";
+        String finalCandidate = "THERE'S NO VALID CANDIDATE ENCRYPTED";
 
         byte[] possibleBallot = new byte[candidates.length + 1];
         possibleBallot[0] = 1;
