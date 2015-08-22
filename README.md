@@ -1,7 +1,7 @@
 # BallotVerification
-Fourth part of the [*MoCa QR*](https://github.com/CamiloG/moca_qr) Voting System project.
+Fourth part of the [*MoCa QR*](http://mocaqr.niclabs.cl) Voting System project.
 
-Verifies that the selection made in [BallotSelection](https://github.com/CamiloG/BallotSelection) was the same as the one encrypted in the printed ballot.
+Verifies that the selection made in [BallotSelection](https://github.com/niclabs/moca-ballot-selection) was the same as the one encrypted in the printed ballot.
 
 ## Files
 1. **BallotVerification.java**: Main class of the program, where are all the logic and the methods to the configuration of the public information, and the reading and processing of both QR codes.
