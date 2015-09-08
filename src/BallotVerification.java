@@ -44,14 +44,21 @@ public class BallotVerification {
     //@ ensures encryptedCandidate > 0 && randomness > 0
     protected static void ballotConfiguration(String encryptedBallotWithSignature, String randomnessString) {
 
-        // Separate text from ballot in: length of ballot(sep) + ballot + signature, and create BigInteger ballot
-        int sep = Integer.parseInt(encryptedBallotWithSignature.substring(0, 3));
-        String encryptedBallotString = encryptedBallotWithSignature.substring(3, sep + 3);
-        encryptedCandidate = new BigInteger(encryptedBallotString);
+        // Separate text from ballot in: encryptedVote and signature
+        String[] encryptionAndSignature = separateBallot(encryptedBallotWithSignature);
+        String encryptedVoteString = encryptionAndSignature[0];
+        System.out.println(encryptedVoteString);
+
+        // Create BigInteger of the encryption
+        encryptedCandidate = new BigInteger(encryptedVoteString);
 
         // Create BigInteger randomness
         randomness = new BigInteger(randomnessString);
 
+    }
+
+    private static String[] separateBallot(String encryptedBallotWithSignature) {
+        return encryptedBallotWithSignature.split("#");
     }
 
     // Algorithm of verification of the encryption printed on the ballot
