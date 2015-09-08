@@ -47,7 +47,6 @@ public class BallotVerification {
         // Separate text from ballot in: encryptedVote and signature
         String[] encryptionAndSignature = separateBallot(encryptedBallotWithSignature);
         String encryptedVoteString = encryptionAndSignature[0];
-        System.out.println(encryptedVoteString);
 
         // Create BigInteger of the encryption
         encryptedCandidate = new BigInteger(encryptedVoteString);
