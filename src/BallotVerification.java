@@ -22,10 +22,12 @@ public class BallotVerification {
     private static Paillier paillierPublic = null;
     private static GUIScreen guiScreen;
 
+    // Set the guiScreen to communicate with the Lanterna environment
     protected static void setGuiScreen(GUIScreen screen) {
         guiScreen = screen;
     }
 
+    // Configuration of the public information stored locally
     protected static void publicConfiguration() throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
 
         // Recover publicKey from local file
@@ -40,18 +42,26 @@ public class BallotVerification {
 
     }
 
+    // Set the values of the read ballot
     //@ requires encryptedBallotWithSignature != null && randomnessString != null;
     //@ ensures encryptedCandidate > 0 && randomness > 0
     protected static void ballotConfiguration(String encryptedBallotWithSignature, String randomnessString) {
 
-        // Separate text from ballot in: length of ballot(sep) + ballot + signature, and create BigInteger ballot
-        int sep = Integer.parseInt(encryptedBallotWithSignature.substring(0, 3));
-        String encryptedBallotString = encryptedBallotWithSignature.substring(3, sep + 3);
-        encryptedCandidate = new BigInteger(encryptedBallotString);
+        // Separate text from ballot in: encryptedVote and signature
+        String[] encryptionAndSignature = separateBallot(encryptedBallotWithSignature);
+        String encryptedVoteString = encryptionAndSignature[0];
+
+        // Create BigInteger of the encryption
+        encryptedCandidate = new BigInteger(encryptedVoteString);
 
         // Create BigInteger randomness
         randomness = new BigInteger(randomnessString);
 
+    }
+
+    // Separate the read ballot into encrypted vote and signature
+    private static String[] separateBallot(String encryptedBallotWithSignature) {
+        return encryptedBallotWithSignature.split("#");
     }
 
     // Algorithm of verification of the encryption printed on the ballot
@@ -59,23 +69,24 @@ public class BallotVerification {
     //@ ensures \result != null
     protected static String verification() {
 
+        // Variable to store the candidate encrypted. By default there's no valid encrypted candidate
         String finalCandidate = "THERE'S NO VALID CANDIDATE ENCRYPTED";
 
-        byte[] possibleBallot = new byte[candidates.length + 1];
-        possibleBallot[0] = 1;
+        // Create the first possible candidate encrypted
+        PlainVote plainVote = new PlainVote(candidates.length, 1);
 
-        // Inicio = possibleBallot[0] = 1 y sum(possibleBallot) = 1
-        // Durante = possibleBallot[0] = 1 y sum(possibleBallot) = 2
-        // Final
-        for (int i = 0; i < possibleBallot.length - 1; i++) {
-            possibleBallot[i+1] = 1;
-            BigInteger possibleEncryption = paillierPublic.encrypt(new BigInteger(possibleBallot), randomness);
+        // Encrypt the possible candidate with the same randomness.
+        // If it's the same as the encrypted one, set finalCandidate and break,
+        // if not, try a different candidate
+        for (int i = 0; i < candidates.length; ++i) {
+            BigInteger voteBI = plainVote.toBigInteger();
+            BigInteger possibleEncryption = paillierPublic.encrypt(voteBI, randomness);
             if (possibleEncryption.equals(encryptedCandidate)) {
-                finalCandidate = candidates[i];
+                finalCandidate = candidates[i+1];
                 break;
             }
             else
-                possibleBallot[i+1] = 0;
+                plainVote = new PlainVote(candidates.length, i+2);
         }
 
         return finalCandidate;
@@ -91,14 +102,17 @@ public class BallotVerification {
         return (BigInteger) oin.readObject();
     }
 
+    // Retrieve the list of candidates
     public static String[] getCandidates() {
         return candidates;
     }
 
+    // Retrieve the Paillier scheme made with the public key retrieved
     public static Paillier getPaillierPublic() {
         return paillierPublic;
     }
 
+    // TODO: Change this to work with candidates.json
     // Function to set-up the candidates from a local file called candidates.xml (which is stored in candidates folder)
     // Because of how is written candidates.xml, it needs this function to store in a String[] the different candidates
     //@ requires folderName != null
