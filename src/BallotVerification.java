@@ -74,7 +74,7 @@ public class BallotVerification {
         String finalCandidate = "THERE'S NO VALID CANDIDATE ENCRYPTED";
 
         // Create the first possible candidate encrypted
-        PlainVote plainVote = new PlainVote(candidates.length, 1);
+        PlainVote plainVote = new PlainVote(candidates.length-1, 1);
 
         // Encrypt the possible candidate with the same randomness.
         // If it's the same as the encrypted one, set finalCandidate and break,
@@ -83,7 +83,7 @@ public class BallotVerification {
             BigInteger voteBI = plainVote.toBigInteger();
             BigInteger possibleEncryption = paillierPublic.encrypt(voteBI, randomness);
             if (possibleEncryption.equals(encryptedCandidate)) {
-                finalCandidate = candidates[i+1];
+                finalCandidate = candidates[i];
                 break;
             }
             else
@@ -113,36 +113,7 @@ public class BallotVerification {
         return paillierPublic;
     }
 
-    // TODO: Change this to work with candidates.json
-    // Function to set-up the candidates from a local file called candidates.xml (which is stored in candidates folder)
-    // Because of how is written candidates.xml, it needs this function to store in a String[] the different candidates
-    //@ requires folderName != null
-
-    /*private static String[] setCandidates() throws ParserConfigurationException, IOException, SAXException {
-        String candidatesFile;
-        candidatesFile = FileDialog.showOpenFileDialog(guiScreen, new File("/home"), "Choose candidates.xml file").getPath();
-        File file = new File(candidatesFile);
-
-        String[] candidates;
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(file);
-        doc.getDocumentElement().normalize();
-
-        NodeList nodeLst = doc.getElementsByTagName("integer");
-        int numberOfCandidates = Integer.parseInt(nodeLst.item(0).getTextContent());
-        candidates = new String[numberOfCandidates + 1];
-        nodeLst = doc.getElementsByTagName("string");
-
-        for (int i = 0 ; i < nodeLst.getLength() ; i++) {
-            Node node = nodeLst.item(i);
-            candidates[i] = node.getTextContent();
-        }
-
-        return candidates;
-    }*/
-
+    // Function to set-up the candidates from a local file called candidatesList.json (which must be configured at the start of the application)
     private static String[] setCandidates() throws IOException {
         String candidatesFile;
         candidatesFile = FileDialog.showOpenFileDialog(guiScreen, new File("/home"), "Choose candidatesList.json file").getPath();
