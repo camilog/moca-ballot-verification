@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import com.googlecode.lanterna.gui.GUIScreen;
 import com.googlecode.lanterna.gui.dialog.FileDialog;
 import org.w3c.dom.Document;
@@ -116,7 +117,8 @@ public class BallotVerification {
     // Function to set-up the candidates from a local file called candidates.xml (which is stored in candidates folder)
     // Because of how is written candidates.xml, it needs this function to store in a String[] the different candidates
     //@ requires folderName != null
-    private static String[] setCandidates() throws ParserConfigurationException, IOException, SAXException {
+
+    /*private static String[] setCandidates() throws ParserConfigurationException, IOException, SAXException {
         String candidatesFile;
         candidatesFile = FileDialog.showOpenFileDialog(guiScreen, new File("/home"), "Choose candidates.xml file").getPath();
         File file = new File(candidatesFile);
@@ -139,6 +141,31 @@ public class BallotVerification {
         }
 
         return candidates;
+    }*/
+
+    private static String[] setCandidates() throws IOException {
+        String candidatesFile;
+        candidatesFile = FileDialog.showOpenFileDialog(guiScreen, new File("/home"), "Choose candidatesList.json file").getPath();
+        File file = new File(candidatesFile);
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String candidatesListJson = br.readLine();
+
+        Gson gson = new Gson();
+        CandidatesList candidatesList = gson.fromJson(candidatesListJson, CandidatesList.class);
+        String[] candidates = new String[candidatesList.number_of_candidates + 1];
+
+        int i = 0;
+        for (Candidate candidate : candidatesList.candidates) {
+            candidates[i] = candidate.name;
+            i++;
+        }
+
+        // FIX THIS!
+        candidates[i] = "Voto Blanco";
+
+        return candidates;
+
     }
 
 }
