@@ -73,8 +73,11 @@ public class BallotVerification {
         // Variable to store the candidate encrypted. By default there's no valid encrypted candidate
         String finalCandidate = "THERE'S NO VALID CANDIDATE ENCRYPTED";
 
+        // Set the real number of candidates. The array candidates has additionally the 'blank vote'
+        int numberOfCandidates = candidates.length - 1;
+
         // Create the first possible candidate encrypted
-        PlainVote plainVote = new PlainVote(candidates.length-1, 1);
+        PlainVote plainVote = new PlainVote(numberOfCandidates, 1);
 
         // Encrypt the possible candidate with the same randomness.
         // If it's the same as the encrypted one, set finalCandidate and break,
@@ -87,7 +90,7 @@ public class BallotVerification {
                 break;
             }
             else
-                plainVote = new PlainVote(candidates.length, i+2);
+                plainVote = new PlainVote(numberOfCandidates, i+2);
         }
 
         return finalCandidate;
@@ -134,6 +137,11 @@ public class BallotVerification {
 
         // FIX THIS!
         candidates[i] = "Voto Blanco";
+
+        for (String candidate : candidates) {
+            System.out.println(candidate);
+        }
+        System.out.println(candidates.length);
 
         return candidates;
 
