@@ -31,8 +31,10 @@ public class GUILanterna extends Window {
         // Add button to configurate the publicInformation
         addComponent(new Button("Configurate Public Information", () -> {
 
+            String candidates = TextInputDialog.showTextInputBox(getOwner(), "Codes Reader", "Read Candidates QR-Code","",1000);
+            String publicKey = TextInputDialog.showTextInputBox(getOwner(),"Codes Reader", "Read Public Key QR-Code","",1000);
             try {
-                BallotVerification.publicConfiguration();
+                BallotVerification.publicConfiguration(candidates, publicKey);
                 updatePublicInformationLabel(publicInformationPanel);
             } catch (IOException | ClassNotFoundException | SAXException | ParserConfigurationException e) {
                 e.printStackTrace();

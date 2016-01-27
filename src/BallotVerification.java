@@ -1,15 +1,9 @@
 import com.google.gson.Gson;
 import com.googlecode.lanterna.gui.GUIScreen;
-import com.googlecode.lanterna.gui.dialog.FileDialog;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import paillierp.Paillier;
 import paillierp.key.PaillierKey;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.math.BigInteger;
@@ -29,17 +23,17 @@ public class BallotVerification {
     }
 
     // Configuration of the public information stored locally
-    protected static void publicConfiguration() throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
+    protected static void publicConfiguration(String candidatesList, String publicKeyString) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
 
         // Recover publicKey from local file
-        BigInteger publicKeyN = recoverPublicKey();
+        BigInteger publicKeyN = new BigInteger(publicKeyString);
 
         // Create Paillier scheme with given publicKey
         PaillierKey publicKey = new PaillierKey(publicKeyN, new Random());
         paillierPublic = new Paillier(publicKey);
 
         // Set-up the list of candidates
-        candidates = setCandidates();
+        candidates = setCandidates(candidatesList);
 
     }
 
@@ -97,15 +91,6 @@ public class BallotVerification {
 
     }
 
-    // Function to retrieve publicKey (BigInteger object) from local file
-    //@ ensures \result > 0
-    private static BigInteger recoverPublicKey() throws IOException, ClassNotFoundException {
-        String fileName;
-        fileName = FileDialog.showOpenFileDialog(guiScreen, new File("/home/"), "Choose Public Key file").getPath();
-        ObjectInputStream oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(fileName)));
-        return (BigInteger) oin.readObject();
-    }
-
     // Retrieve the list of candidates
     public static String[] getCandidates() {
         return candidates;
@@ -117,16 +102,9 @@ public class BallotVerification {
     }
 
     // Function to set-up the candidates from a local file called candidatesList.json (which must be configured at the start of the application)
-    private static String[] setCandidates() throws IOException {
-        String candidatesFile;
-        candidatesFile = FileDialog.showOpenFileDialog(guiScreen, new File("/home"), "Choose candidatesList.json file").getPath();
-        File file = new File(candidatesFile);
-
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String candidatesListJson = br.readLine();
-
+    private static String[] setCandidates(String candidateList) throws IOException {
         Gson gson = new Gson();
-        CandidatesList candidatesList = gson.fromJson(candidatesListJson, CandidatesList.class);
+        CandidatesList candidatesList = gson.fromJson(candidateList, CandidatesList.class);
         String[] candidates = new String[candidatesList.number_of_candidates + 1];
 
         int i = 0;
