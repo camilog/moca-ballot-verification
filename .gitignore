@@ -23,3 +23,5 @@ out
 !lib/paillier.jar
 !lib/lanterna-2.1.9.jar
 !lib/gson-2.3.1.jar
+
+/src/META-INF/

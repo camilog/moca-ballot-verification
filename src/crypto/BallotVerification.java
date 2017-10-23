@@ -1,9 +1,18 @@
+package crypto;
+
 import com.google.gson.Gson;
-import com.googlecode.lanterna.gui.GUIScreen;
-import org.xml.sax.SAXException;
+
+import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
+
+import objects.AuthorityPublicKey;
+import objects.Candidate;
+import objects.Election;
+import objects.PlainVote;
+
 import paillierp.Paillier;
 import paillierp.key.PaillierKey;
 
+import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.math.BigInteger;
@@ -15,15 +24,12 @@ public class BallotVerification {
     private static BigInteger randomness = null;
     private static String[] candidates = null;
     private static Paillier paillierPublic = null;
-    private static GUIScreen guiScreen;
-
-    // Set the guiScreen to communicate with the Lanterna environment
-    protected static void setGuiScreen(GUIScreen screen) {
-        guiScreen = screen;
-    }
 
     // Configuration of the public information stored locally
-    protected static void publicConfiguration(String candidatesList, String publicKeyString) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
+    public static void publicConfiguration(String electionInfo, String publicKeyInfo) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
+
+        AuthorityPublicKey authPublicKey = new Gson().fromJson(publicKeyInfo, AuthorityPublicKey.class);
+        String publicKeyString = authPublicKey.getN();
 
         // Recover publicKey from local file
         BigInteger publicKeyN = new BigInteger(publicKeyString);
@@ -33,14 +39,14 @@ public class BallotVerification {
         paillierPublic = new Paillier(publicKey);
 
         // Set-up the list of candidates
-        candidates = setCandidates(candidatesList);
+        candidates = setCandidates(electionInfo);
 
     }
 
     // Set the values of the read ballot
     //@ requires encryptedBallotWithSignature != null && randomnessString != null;
     //@ ensures encryptedCandidate > 0 && randomness > 0
-    protected static void ballotConfiguration(String encryptedBallotWithSignature, String randomnessString) {
+    public static void ballotConfiguration(String encryptedBallotWithSignature, String randomnessString) {
 
         // Separate text from ballot in: encryptedVote and signature
         String[] encryptionAndSignature = separateBallot(encryptedBallotWithSignature);
@@ -62,7 +68,7 @@ public class BallotVerification {
     // Algorithm of verification of the encryption printed on the ballot
     //@ requires encryptedCandidate != null && randomness != null && candidates != null && paillierPublic != null;
     //@ ensures \result != null
-    protected static String verification() {
+    public static String verification() {
 
         // Variable to store the candidate encrypted. By default there's no valid encrypted candidate
         String finalCandidate = "THERE'S NO VALID CANDIDATE ENCRYPTED";
@@ -102,24 +108,19 @@ public class BallotVerification {
     }
 
     // Function to set-up the candidates from a local file called candidatesList.json (which must be configured at the start of the application)
-    private static String[] setCandidates(String candidateList) throws IOException {
+    private static String[] setCandidates(String electionInfo) throws IOException {
         Gson gson = new Gson();
-        CandidatesList candidatesList = gson.fromJson(candidateList, CandidatesList.class);
-        String[] candidates = new String[candidatesList.number_of_candidates + 1];
+        Election election = gson.fromJson(electionInfo, Election.class);
+        String[] candidates = new String[election.getNumber_of_candidates() + 1];
 
         int i = 0;
-        for (Candidate candidate : candidatesList.candidates) {
-            candidates[i] = candidate.name;
+        for (Candidate candidate : election.getCandidates()) {
+            candidates[i] = candidate.getName();
             i++;
         }
 
         // FIX THIS!
         candidates[i] = "Voto Blanco";
-
-        for (String candidate : candidates) {
-            System.out.println(candidate);
-        }
-        System.out.println(candidates.length);
 
         return candidates;
 

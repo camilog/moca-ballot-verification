@@ -1,10 +1,12 @@
+package objects;
+
 import java.math.BigInteger;
 
 public class PlainVote {
 
-    int numberOfCandidates;
-    int candidateSelected; // 1 to numberOfCandidates+1
-    byte[] voteByteArray;
+    private int numberOfCandidates;
+    private int candidateSelected; // 1 to numberOfCandidates+1
+    private byte[] voteByteArray;
 
     public PlainVote(int numberOfCandidates, int candidateSelected){
         this.numberOfCandidates = numberOfCandidates;
